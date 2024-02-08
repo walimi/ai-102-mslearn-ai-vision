@@ -5,7 +5,8 @@ using Azure;
 using System.IO;
 
 // Import namespaces
-
+using Azure.AI.Vision.Common;
+using Azure.AI.Vision.ImageAnalysis;
 
 namespace image_analysis
 {
@@ -30,6 +31,7 @@ namespace image_analysis
                 }
 
                 // Authenticate Azure AI Vision client
+                var cvClient = new VisionServiceOptions(aiSvcEndpoint, new AzureKeyCredential(aiSvcKey));
 
                 
                 // Analyze image
@@ -52,10 +54,50 @@ namespace image_analysis
             var analysisOptions = new ImageAnalysisOptions()
             {
                 // Specify features to be retrieved
-
+                Features = ImageAnalysisFeature.Caption
+                            | ImageAnalysisFeature.DenseCaptions
+                            | ImageAnalysisFeature.Objects
+                            | ImageAnalysisFeature.People
+                            | ImageAnalysisFeature.Text
+                            | ImageAnalysisFeature.Tags
             };
 
             // Get image analysis
+            using var imageSource = VisionSource.FromFile(imageFile);
+
+            using var analyzer = new ImageAnalyzer(serviceOptions, imageSource, analysisOptions);
+
+            var result = analyzer.Analyze();
+
+            if (result.Reason == ImageAnalysisResultReason.Analyzed) 
+            {
+                // get image coptions
+                if (result.Caption != null)
+                {
+                    Console.WriteLine(" Caption:");
+                    Console.WriteLine($"    \"{result.Caption.Content}\", Confidence {result.Caption.Confidence:0.0000}");                     
+                }
+
+                // get image dense captions
+                if (result.DenseCaptions != null)
+                {
+                    Console.WriteLine(" Dense Captions:");
+                    foreach (var caption in result.DenseCaptions)
+                    {
+                        Console.WriteLine($"    \"{caption.Content}\", Confidence: {caption.Confidence:0.0000}");
+                    }
+                    Console.WriteLine($"\n"); 
+                }
+
+            }
+            else 
+            {
+                var errorDetails = ImageAnalysisErrorDetails.FromResult(result);
+                Console.WriteLine(" Analysis Failed");
+                Console.WriteLine($"    Error reason: {errorDetails.Reason}");
+                Console.WriteLine($"    Error code: {errorDetails.ErrorCode}");
+                Console.WriteLine($"    Error message: {errorDetails.Message}\n");
+            }
 
         }
         static void BackgroundForeground(string imageFile, VisionServiceOptions serviceOptions)
