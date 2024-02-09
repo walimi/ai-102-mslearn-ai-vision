@@ -89,6 +89,17 @@ namespace image_analysis
                     Console.WriteLine($"\n"); 
                 }
 
+                // Get image tags
+                if (result.Tags != null)
+                {
+                    Console.WriteLine($"    Tags:");
+                    foreach (var tag in result.Tags)
+                    {
+                        Console.WriteLine($"    \"{tag.Name}\", Confidence {tag.Confidence:0.0000}");
+                    }
+                    Console.WriteLine($"\n");
+                }
+
             }
             else 
             {
