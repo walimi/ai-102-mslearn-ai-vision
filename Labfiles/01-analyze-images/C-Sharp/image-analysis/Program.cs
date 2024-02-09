@@ -129,6 +129,37 @@ namespace image_analysis
                     Console.WriteLine(" Results saved in " + output_file + "\n"); 
                 }
 
+                // Get people in the image
+                if (result.People != null)
+                {
+                    Console.WriteLine($"    People:");
+
+                    // Prepare image for drawing
+                    System.Drawing.Image image = System.Drawing.Image.FromFile(imageFile);
+                    Graphics graphics = Graphics.FromImage(image);
+                    Pen pen = new Pen(Color.Cyan, 3);
+                    Font font = new Font("Arial", 16);
+                    SolidBrush brush = new SolidBrush(Color.WhiteSmoke);
+
+                    foreach (var person in result.People)
+                    {
+
+                        // Draw object bounding box
+                        var r = person.BoundingBox;
+                        Rectangle rect = new Rectangle(r.X, r.Y, r.Width, r.Height);
+                        graphics.DrawRectangle(pen, rect);
+
+                        // Return the confidence of the person detected
+                        Console.WriteLine($"    Bounding box {person.BoundingBox}, Confidence {person.Confidence: 0.0000}");
+
+                    }
+
+                    // Save annotated image
+                    string output_file = "persons.jpg";
+                    image.Save(output_file);
+                    Console.WriteLine(" Results saved in " + output_file + "\n");
+                }
+
             }
             else 
             {

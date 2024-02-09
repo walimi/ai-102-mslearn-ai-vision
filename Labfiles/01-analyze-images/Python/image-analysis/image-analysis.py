@@ -110,6 +110,31 @@ def AnalyzeImage(image_file, cv_client):
 
 
         # Get people in the image
+        if result.people is not None:
+            print("\nPeople in image:")
+
+            # Prepare image for drawing
+            image = Image.open(image_file)
+            fig = plt.figure(figsize=(image.width/100, image.height/100))
+            plt.axis('off')
+            draw = ImageDraw.Draw(image)
+            color = 'cyan'
+
+            for detected_people in result.people:
+                 # Draw object bounding box
+                 r = detected_people.bounding_box
+                 bounding_box = ((r.x, r.y), (r.x + r.w, r.y + r.h))
+                 draw.rectangle(bounding_box, outline=color, width=3)
+
+                 # Return the confidence score for person detected
+                 print(" {} (confidence: {:2f}%)".format(detected_people.bounding_box, detected_people.confidence * 100))
+
+            # Save annotated image
+            plt.imshow(image)
+            plt.tight_layout(pad=0)
+            outputfile = 'people.jpg'
+            fig.savefig(outputfile)
+            print(' Results saved in', outputfile)
 
     else:
         error_details = sdk.ImageAnalysisErrorDetails.from_result(result)
