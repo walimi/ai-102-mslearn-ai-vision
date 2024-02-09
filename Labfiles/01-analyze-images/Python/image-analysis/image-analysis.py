@@ -81,6 +81,32 @@ def AnalyzeImage(image_file, cv_client):
 
 
         # Get objects in the image
+        if result.objects is not None:
+            print("\nObjects in image:")
+
+            # Prepare image for drawing
+            image = Image.open(image_file)
+            fig = plt.figure(figsize=(image.width/100, image.height/100))
+            plt.axis('off')
+            draw = ImageDraw.Draw(image)
+            color = 'cyan'
+
+            for detected_object in result.objects:
+                 # Print object name
+                 print("    {} (confidence: {:2f}%)".format(detected_object.name, detected_object.confidence * 100))
+
+                 # Draw object bounding box
+                 r = detected_object.bounding_box
+                 bounding_box = ((r.x, r.y), (r.x + r.w, r.y + r.h))
+                 draw.rectangle(bounding_box, outline=color, width=3)
+                 plt.annotate(detected_object.name, (r.x,r.y), backgroundcolor=color)
+
+            # Save annotated image
+            plt.imshow(image)
+            plt.tight_layout(pad=0)
+            outputfile = 'objects.jpg'
+            fig.savefig(outputfile)
+            print(' Results saved in', outputfile)
 
 
         # Get people in the image
