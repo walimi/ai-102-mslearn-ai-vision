@@ -11,6 +11,11 @@ import numpy as np
 import azure.ai.vision as sdk
 
 
+from azure.ai.vision.imageanalysis import ImageAnalysisClient
+from azure.ai.vision.imageanalysis.models import VisualFeatures
+from azure.core.credentials import AzureKeyCredential
+
+
 def main():
     global cv_client
 
@@ -29,10 +34,12 @@ def main():
         cv_client = sdk.VisionServiceOptions(ai_endpoint, ai_key)
         
         # Analyze image
-        AnalyzeImage(image_file, cv_client)
+        #AnalyzeImage(image_file, cv_client)
 
         # Generate thumbnail
         BackgroundForeground(image_file, cv_client)
+
+        #BackgroundForegroundv2()
 
     except Exception as ex:
         print(ex)
@@ -144,12 +151,60 @@ def AnalyzeImage(image_file, cv_client):
         print(" Error message: {}".format(error_details.message))
 
 
-def BackgroundForeground(image_file, cv_client):
-    print('\n')
+def BackgroundForeground(image_file, cv_client):  
     
     # Remove the background from the image or generate a foreground matte
+    print('\nRemove the background from the image or generate foreground matte')
+
+    image = sdk.VisionSource(image_file)
+
+    analysis_options = sdk.ImageAnalysisOptions()
+
+    # Set the image analysis segmentation mode to background or foreground
+    analysis_options.segmentaion_mode = sdk.ImageSegmentationMode.BACKGROUND_REMOVAL
+    analysis_options.features = sdk.ImageAnalysisFeature.CAPTION 
 
 
+    image_analyzer = sdk.ImageAnalyzer(cv_client, image, analysis_options)
+
+    print("\nPlease wait for image analysis results...")
+
+    result = image_analyzer.analyze()
+
+    if result is None:
+        print("\nresult is null")
+        exit()
+
+    if result.reason == sdk.ImageAnalysisResultReason.ANALYZED:        
+            
+        if result.segmentation_result is None:
+            print("result.segmentation_result is null")
+            exit()
+
+        image_buffer = result.segmentation_result.image_buffer
+
+        if image_buffer is None:
+            print("image_buffer is null")
+        elif image_buffer is not None:
+            print("image_buffer is not null")
+            print(" Segmentation result:")
+            print(" Output image buffer size (bytes) = {}".format(len(image_buffer)))
+            print(" Output image height = {}".format(result.segmentation_result.image_height))
+            print(" Output image width = {}".format(result.segmentation_result.image_width))
+
+            output_image_file = "newimage.jpg"
+            with open(output_image_file, 'wb') as binary_file:
+                binary_file.write(image_buffer)
+            print("     File {} written to disk".format(output_image_file))
+
+    else:
+         
+        error_details = sdk.ImageAnalysisErrorDetails.from_result(result)
+        print(" Analysis failed")
+        print("     Error reason: {}".format(error_details.reason))
+        print("     Error code: {}".format(error_details.error_code))
+        print("     Error message: {}".format(error_details.message))
+        print(" Did you set the computer vision endpoint and key?")        
 
 if __name__ == "__main__":
     main()

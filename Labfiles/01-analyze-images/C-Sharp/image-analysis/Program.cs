@@ -35,7 +35,7 @@ namespace image_analysis
 
                 
                 // Analyze image
-                AnalyzeImage(imageFile, cvClient);
+                //AnalyzeImage(imageFile, cvClient);
 
                 // Remove the background or generate a foreground matte from the image
                 BackgroundForeground(imageFile, cvClient);
@@ -174,7 +174,48 @@ namespace image_analysis
         static void BackgroundForeground(string imageFile, VisionServiceOptions serviceOptions)
         {
             // Remove the background from the image or generate a foreground matte
+            Console.WriteLine($"\nRemove the background from the image or generate a foreground matte");
 
+            using var imageSource = VisionSource.FromFile(imageFile);
+
+            var analysisOptions = new ImageAnalysisOptions()
+            {
+                // Set the image analysis segmentation mode to background or foreground
+                SegmentationMode = ImageSegmentationMode.BackgroundRemoval
+                //SegmentationMode = ImageSegmentationMode.ForegroundMatting
+            };
+
+            using var analyzer = new ImageAnalyzer(serviceOptions, imageSource, analysisOptions); 
+
+            var result = analyzer.Analyze(); 
+
+            // Remove the background or generate the foreground matte
+            if (result.Reason == ImageAnalysisResultReason.Analyzed)
+            {
+                using var segmentationResult = result.SegmentationResult;
+
+                var imageBuffer = segmentationResult.ImageBuffer;
+                Console.WriteLine($"\n  Segmentation result:");                    
+                Console.WriteLine($"    Output image buffer size (bytes) = {imageBuffer.Length}");    
+                Console.WriteLine($"    Output image height = {segmentationResult.ImageHeight}");    
+                Console.WriteLine($"    Output image width = {segmentationResult.ImageWidth}");                    
+
+                string outputImageFile = "newimage.jpg";
+                using(var fs = new FileStream(outputImageFile, FileMode.Create))
+                {
+                    fs.Write(imageBuffer.Span);
+                }
+                Console.WriteLine($"    File {outputImageFile} written to disk\n");
+            }
+            else
+            {
+                var errorDetails = ImageAnalysisErrorDetails.FromResult(result);
+                Console.WriteLine(" Analysis failed.");
+                Console.WriteLine($"    Error reason: {errorDetails.Reason}");
+                Console.WriteLine($"    Error code: {errorDetails.ErrorCode}");
+                Console.WriteLine($"    Error message: {errorDetails.Message}");
+                Console.WriteLine(" Did you set the computer vision endpoint and key?\n");
+            }
         }
     }
 }
