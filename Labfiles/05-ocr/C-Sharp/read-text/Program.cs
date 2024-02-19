@@ -34,7 +34,7 @@ namespace read_text
 
 
                 // Menu for text reading functions
-                Console.WriteLine("\n1: Use Read API for image (Lincoln.jpg)\n2: Read handwriting (Note.jpg)\nAny other key to quit\n");
+                Console.WriteLine("\n1: Use Read API for image (Lincoln.jpg)\n2: Read handwriting (Note.jpg)\n3: Read handwriting (aliman3.jpg)\nAny other key to quit\n");
                 Console.WriteLine("Enter a number:");
                 string command = Console.ReadLine();
                 string imageFile;
@@ -47,6 +47,10 @@ namespace read_text
                         break;
                     case "2":
                         imageFile = "images/Note.jpg";
+                        GetTextRead(imageFile, client);
+                        break;
+                    case "3":
+                        imageFile = "images/aliman3.jpg";
                         GetTextRead(imageFile, client);
                         break;
                     default:
@@ -93,13 +97,13 @@ namespace read_text
                     var drawLinePolygon = true;
 
                     // Return the position bounding box around each line
-                    Console.WriteLine($"   Bounding Polygon: [{string.Join(" ", line.BoundingPolygon)}]");  
+                    //Console.WriteLine($"   Bounding Polygon: [{string.Join(" ", line.BoundingPolygon)}]");  
 
 
                     // Return each word detected in the image and the position bounding box around each word with the confidence level of each word
                     foreach (DetectedTextWord word in line.Words)
                     {
-                        Console.WriteLine($"     Word: '{word.Text}', Confidence {word.Confidence:F4}, Bounding Polygon: [{string.Join(" ", word.BoundingPolygon)}]");
+                        //Console.WriteLine($"     Word: '{word.Text}', Confidence {word.Confidence:F4}, Bounding Polygon: [{string.Join(" ", word.BoundingPolygon)}]");
                         
                         // Draw word bounding polygon
                         drawLinePolygon = false;
