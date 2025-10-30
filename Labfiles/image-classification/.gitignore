@@ -5,6 +5,7 @@ env/
 ENV/
 .venv/
 .env/
+../python/train-classifer/.env
 
 # Python bytecode
 __pycache__/
@@ -62,6 +63,10 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+# Specific environment files
+python/train-classifier/.env
+python/test-classifier/.env
 
 # IDE
 .vscode/
